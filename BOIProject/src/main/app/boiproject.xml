@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" database="emaildb" doc:name="MySQL Configuration"/>
+    <http:listener-config name="HTTP_Get_Customer_Configuration" host="localhost" port="5000" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Account_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="HTTP_Get_Accounts_Configuration" host="localhost" port="5001" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Customer_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
+    <http:listener-config name="HTTP_Get_Payments_Configuration" host="localhost" port="5002" doc:name="HTTP Listener Configuration"/>
+    <http:request-config name="HTTP_Payment_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration1" host="localhost" port="5005" doc:name="HTTP Listener Configuration"/>
+    <sub-flow name="get_api_key">
+        <set-session-variable variableName="apikey" value="jwt eyJ6aXAiOiJERUYiLCJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.N6aas89l4sphzyPuA2E7XrqqWJ-HMfVWPjS3pbu0-JXY7q8yWfC-UBlvILzwWTSmIJRJhRy5x1N7g9igcqtH4LXnAWHpwZnJtx5W0EO98dSx2rO6yUa1hgjEylHBNxLQFLWBs_TkpSaCTHBevk8Zfwwe0bJTbDxYhkDerGIbQS1Y5CsgYL02MRPm4eOyIwKh0DMh0Q-_UXQNthwlJ9ARSR4q9tyDn64zR8QbZULPjvTQewGcKm-3JyfLGC3wnVm4u-rRXIzJLGM8HZSbicnn53X_Q-dvurr-KVi2MrOXsskYo4GE038jrlbFm9ryPxQUx4trtY8zx0AtxRsjkq-C0w.Cg9qNDq4yUqbjCei.1uPCk6tqaanKRnv7L9cG_3eLKzBr6_gdCMMWs03G7YjmVChzYYysrZ7NASWkGETS__sFEUqOzaQ4tb8v9QBtTRYIygCi-UvHD7UvO2t83MSIhZTlCP_wFXQv4EKtqrm0VRO3i3fvyRvPMxPF48rouD_UL20o84n7w79eHC0yl3pLYhnrWhCSa2PrbCKOzLBjJL7m4U4qwV16LrCEj92Fewv5AuXmvKkZQHAsR-96bM8miG753vpnEYAvkHjBfUUyZ2NHv_uyq2sVofAjOROpph1MYOGfjOoeg8RXXu76IY39vNhcbUAu1KF27Vj936WtpXgSOK-VMNriBrksTWkcTlj8prSWb45CEjAOM6VK_SqGAHaQGEO0e5oXu51z7G5BiyIuHgyjz1JqGNPFLHKzIrHkaCQ_pJg2qp4vgyN-g1K1nISw9TsXygluCdSGFagdwzRxWsekyOZD4g._ioIlyD9M3KhJiZd24gU8A" doc:name="API_KEY"/>
+    </sub-flow>
+    <flow name="get_customer_flow">
+        <http:listener config-ref="HTTP_Get_Customer_Configuration" path="/customer" doc:name="HTTP"/>
+        <flow-ref name="get_api_key" doc:name="Flow Reference"/>
+        <http:request config-ref="HTTP_Customer_Configuration" path="/customers-sbx/v1/me-basic" method="GET" doc:name="HTTPS_CUSTOMER">
+            <http:request-builder>
+                <http:header headerName="Authorization" value="#[sessionVars.apikey]"/>
+                <http:header headerName="Accept" value="application/json"/>
+            </http:request-builder>
+        </http:request>
+    </flow>
+    <flow name="get_account_flow">
+        <http:listener config-ref="HTTP_Get_Accounts_Configuration" path="/account" allowedMethods="GET" doc:name="HTTP"/>
+        <flow-ref name="get_api_key" doc:name="Flow Reference"/>
+        <logger message="---------&gt;#[sessionVars.apikey]" level="INFO" doc:name="Logger"/>
+        <http:request config-ref="HTTP_Account_Configuration" path="/accounts-sbx/v1/me/accounts" method="GET" doc:name="HTTPS_ACCOUNTS">
+            <http:request-builder>
+                <http:query-param paramName="Accept" value="Application/Json"/>
+                <http:header headerName="Authorization" value="#[sessionVars.apikey]"/>
+            </http:request-builder>
+        </http:request>
+        <logger message="#[message]" level="INFO" doc:name="customer"/>
+    </flow>
+    <flow name="get_payments_flow">
+        <http:listener config-ref="HTTP_Get_Payments_Configuration" path="/payments" doc:name="HTTP"/>
+        <flow-ref name="get_api_key" doc:name="Flow Reference"/>
+        <set-variable variableName="accountId" value="ES0182002000000000000000000042075349XXXXXXXXX" doc:name="Account ID"/>
+        <http:request config-ref="HTTP_Payment_Configuration" path="/payments-sbx/v1/me/transfers" method="GET" doc:name="HTTPS_PAYMENTS">
+            <http:request-builder>
+                <http:query-param paramName="accountId" value="#[flowVars.accountId]"/>
+                <http:header headerName="Authorization" value="#[sessionVars.apikey]"/>
+                <http:header headerName="Accept" value="Application/Json"/>
+            </http:request-builder>
+        </http:request>
+    </flow>
+    <flow name="Copy_of_Login_flow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/login" doc:name="HTTP"/>
+        <logger message="the payload is============#[payload]" level="INFO" doc:name="Payload logger"/>
+        <custom-transformer class="com.qa.messageReturn.MessageTransformer" doc:name="Message_Transformer"/>
+        <json:object-to-json-transformer doc:name="Message to JSON"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to HashMap"/>
+        <logger message="the payload is now ===========#[payload['inputEmail']]" level="INFO" doc:name="Payload logger"/>
+        <expression-component doc:name="Expression"><![CDATA[flowVars.loginQuery= "username='"+payload['inputEmail']+"' and password='"+payload['inputPassword']+"'";]]></expression-component>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[select * from users where #[flowVars.loginQuery]]]></db:dynamic-query>
+        </db:select>
+        <logger message="query result #[payload]" level="INFO" doc:name="query result Logger"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload != empty]">
+                <set-session-variable variableName="loggedIN" value="valid" doc:name="loggedIN"/>
+                <set-session-variable variableName="user" value="#[ payload[0]['username']]" doc:name="Copy_of_user"/>
+            </when>
+            <otherwise>
+                <set-variable variableName="outputMessage" value=" &quot;You have not enter a vaild login&quot;" doc:name="outputMessage"/>
+                <set-session-variable variableName="loggedIN" value="invalid" doc:name="loggedIN"/>
+            </otherwise>
+        </choice>
+        <set-payload value="#[['loggedIN':sessionVars.loggedIN, 'username':sessionVars.user, 'outputMessage':flowVars.outputMessage]]" doc:name="Set Payload"/>
+        <logger message="before json #[payload]" level="INFO" doc:name="Logger"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <logger message="after json #[payload]" level="INFO" doc:name="Logger"/>
+    </flow>
+    <flow name="upload_receipt_flow">
+        <http:listener config-ref="HTTP_Listener_Configuration1" path="/" doc:name="HTTP_POST_RECEIPT"/>
+        <logger message="#[message] +++++++++++++++++ #[payload]" level="INFO" doc:name="incomming message and payload"/>
+    </flow>
+</mule>
