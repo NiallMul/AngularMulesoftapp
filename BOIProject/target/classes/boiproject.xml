@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:cors="http://www.mulesoft.org/schema/mule/cors"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/cors http://www.mulesoft.org/schema/mule/cors/current/mule-cors.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-	<db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" database="emaildb" doc:name="MySQL Configuration"/>
-    <http:listener-config name="HTTP_Get_Customer_Configuration" host="localhost" port="5000" doc:name="HTTP Listener Configuration"/>
+<context:property-placeholder location="boiproject.properties"/>
+	<db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" database="receiptbook" doc:name="MySQL Configuration"/>
+  
     <http:request-config name="HTTP_Account_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
-    <http:listener-config name="HTTP_Get_Accounts_Configuration" host="localhost" port="5001" doc:name="HTTP Listener Configuration"/>
     <http:request-config name="HTTP_Customer_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Get_Payments_Configuration" host="localhost" port="5002" doc:name="HTTP Listener Configuration"/>
     <http:request-config name="HTTP_Payment_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Listener_Configuration1" host="localhost" port="5005" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration_main" host="localhost" port="5000" doc:name="HTTP Listener Configuration"/>
+  	  <cors:config name="Cors_Configuration" doc:name="Cors Configuration">
+     <cors:origins>
+         <cors:origin url="*" accessControlMaxAge="180">
+             <cors:methods>
+                 <cors:method>GET</cors:method>
+                 <cors:method>POST</cors:method>
+                 <cors:method>PUT</cors:method>
+                 <cors:method>DELETE</cors:method>
+                 <cors:method>OPTIONS</cors:method>
+             </cors:methods>
+             <cors:headers>
+                 <cors:header>X-Allow-Origin</cors:header>
+             </cors:headers>
+         </cors:origin>
+     </cors:origins>
+ </cors:config>
     <sub-flow name="get_api_key">
-        <set-session-variable variableName="apikey" value="jwt eyJ6aXAiOiJERUYiLCJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.N6aas89l4sphzyPuA2E7XrqqWJ-HMfVWPjS3pbu0-JXY7q8yWfC-UBlvILzwWTSmIJRJhRy5x1N7g9igcqtH4LXnAWHpwZnJtx5W0EO98dSx2rO6yUa1hgjEylHBNxLQFLWBs_TkpSaCTHBevk8Zfwwe0bJTbDxYhkDerGIbQS1Y5CsgYL02MRPm4eOyIwKh0DMh0Q-_UXQNthwlJ9ARSR4q9tyDn64zR8QbZULPjvTQewGcKm-3JyfLGC3wnVm4u-rRXIzJLGM8HZSbicnn53X_Q-dvurr-KVi2MrOXsskYo4GE038jrlbFm9ryPxQUx4trtY8zx0AtxRsjkq-C0w.Cg9qNDq4yUqbjCei.1uPCk6tqaanKRnv7L9cG_3eLKzBr6_gdCMMWs03G7YjmVChzYYysrZ7NASWkGETS__sFEUqOzaQ4tb8v9QBtTRYIygCi-UvHD7UvO2t83MSIhZTlCP_wFXQv4EKtqrm0VRO3i3fvyRvPMxPF48rouD_UL20o84n7w79eHC0yl3pLYhnrWhCSa2PrbCKOzLBjJL7m4U4qwV16LrCEj92Fewv5AuXmvKkZQHAsR-96bM8miG753vpnEYAvkHjBfUUyZ2NHv_uyq2sVofAjOROpph1MYOGfjOoeg8RXXu76IY39vNhcbUAu1KF27Vj936WtpXgSOK-VMNriBrksTWkcTlj8prSWb45CEjAOM6VK_SqGAHaQGEO0e5oXu51z7G5BiyIuHgyjz1JqGNPFLHKzIrHkaCQ_pJg2qp4vgyN-g1K1nISw9TsXygluCdSGFagdwzRxWsekyOZD4g._ioIlyD9M3KhJiZd24gU8A" doc:name="API_KEY"/>
+        <set-session-variable variableName="apikey" value="jwt eyJ6aXAiOiJERUYiLCJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.mtBjYPAHguFlzyJrVM-RqKlHS60ziDBgCoUjArtRZ3Gsrzxom-Wvx8c5KI0SNT4Jz58yfaR6b6BqToYKcBqZiA86bNk91AZ3KCWMk3UZ4sDKFm_qFkfY5V9czUA_IRxAAUETnAGa9-fZNn3TTOHU0tw0anhMosBKoDnhnOFO1SGB9s9-_Om8EAqzaquY7vx4awVxfpv3nzKVABB2O6J8MVZGMNSHvC_Zp9sYYGEocnzYy3NA_0im5jPQ0tqzEuwolRY95JvXdBBq0FoDv3iVTeg47LEnXXlxwUOzE0nP6PGre9rHxeqJObz6GjeNyxuNf9uMnyk6eO3qXQhag9a2jA.aqGc4gB17prpTkFl.MKF3MD8eG7bw9UqwByUDaOqwv-I8JSfMFA-sI4m2A_sJrukin4QhocGHIsZOvQXEVPV5HvPW2JrT__7BQPWB4N1rTx8zPA5g_CNq3MXkvENMg0Na7fA_haYx0CTUV63mzNnifSqbsX8HHXU2WJvMFKFlhzz_a0FP_eoFp2XxZ0Xn9WVScUTQ5hQanOZLER0IyQ-l5TvLWcvBQElefFEevnfLMnMLjmmRRzJOdTaPBynINZQalOUrdmMxEbNEn_R1IX73rCorrbsWqUELvfleFVFtwQeoT4TI5uBIIcAv054RVFIZzM9qNQ8eYioN-lF6TK7pmeMktRhAxgbxbXOYidKwHeh2b20ShIfDza8hjAPg-MZcGWfY1V6EAJGOIEPksl03s2p4Yo2QIVMfHXcAgfm_OhubZte_hYLJyh4CSSAlU_QmIzqQ2fTZOaUmH4DhKqox62e7RG-6BZQ.6lfTaBz5riflozfhZa78kA" doc:name="API_KEY"/>
     </sub-flow>
     <flow name="get_customer_flow">
-        <http:listener config-ref="HTTP_Get_Customer_Configuration" path="/customer" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/customer" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
         <http:request config-ref="HTTP_Customer_Configuration" path="/customers-sbx/v1/me-basic" method="GET" doc:name="HTTPS_CUSTOMER">
             <http:request-builder>
@@ -32,7 +51,8 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         </http:request>
     </flow>
     <flow name="get_account_flow">
-        <http:listener config-ref="HTTP_Get_Accounts_Configuration" path="/account" allowedMethods="GET" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/account" allowedMethods="GET" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
         <logger message="---------&gt;#[sessionVars.apikey]" level="INFO" doc:name="Logger"/>
         <http:request config-ref="HTTP_Account_Configuration" path="/accounts-sbx/v1/me/accounts" method="GET" doc:name="HTTPS_ACCOUNTS">
@@ -44,7 +64,8 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         <logger message="#[message]" level="INFO" doc:name="customer"/>
     </flow>
     <flow name="get_payments_flow">
-        <http:listener config-ref="HTTP_Get_Payments_Configuration" path="/payments" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/payments" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
         <set-variable variableName="accountId" value="ES0182002000000000000000000042075349XXXXXXXXX" doc:name="Account ID"/>
         <http:request config-ref="HTTP_Payment_Configuration" path="/payments-sbx/v1/me/transfers" method="GET" doc:name="HTTPS_PAYMENTS">
@@ -56,7 +77,8 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         </http:request>
     </flow>
     <flow name="Copy_of_Login_flow">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/login" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/login" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <logger message="the payload is============#[payload]" level="INFO" doc:name="Payload logger"/>
         <custom-transformer class="com.qa.messageReturn.MessageTransformer" doc:name="Message_Transformer"/>
         <json:object-to-json-transformer doc:name="Message to JSON"/>
@@ -83,7 +105,8 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         <logger message="after json #[payload]" level="INFO" doc:name="Logger"/>
     </flow>
     <flow name="upload_receipt_flow">
-        <http:listener config-ref="HTTP_Listener_Configuration1" path="/" doc:name="HTTP_POST_RECEIPT"/>
-        <logger message="#[message] +++++++++++++++++ #[payload]" level="INFO" doc:name="incomming message and payload"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/uploadReceipt" doc:name="HTTP_POST_RECEIPT"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="Copy_of_CORS Validate"/>
+        <logger message="#[message.inboundProperties.'http.query.params'.id]" level="INFO" doc:name="incomming message and payload"/>
     </flow>
 </mule>
