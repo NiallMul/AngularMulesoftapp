@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="accountApp">
+<head>
+    <meta charset="UTF-8">
+    <title>Google API</title>
+<body>
+    <nav class="navbar navbar-default">
+	    <div class="container-fluid">
+	        <div class="navbar-header">
+	            <a class="navbar-brand" href="#">GoogleAPIApp</a>
+	        </div>
+	        <ul class="nav navbar-nav">
+	            <li><a ui-sref="upload">Upload Image</a></li>
+
+	        </ul>
+	    </div>
+	</nav>
+	
+    <div ui-view></div>
+    
+	<link rel="stylesheet" href="scripts/bootstrap.min.css"> 
+    <script src="scripts/jquery-2.1.4.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.0/angular.js"></script>
+    <script src="scripts/ui-router.min.js"></script>
+    <script src="scripts/bootstrap.min.js"></script>
+    
+    <script src="app/app.js"></script>
+    <script src="app/app-state-manager.js"></script>
+    
+    <script src="app/feature/upload/upload-controller.js"></script>
+    <script src="app/feature/dashboard/dashboard-controller.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<div class="panel panel-default" ng-controller="uploadController as uploadCtrl">
+	<div class="panel-heading">Upload Page</div>
+	<div class="panel-body">
+		<input type="file" id="input" name="receiptpic"></input><br>
+		<canvas width="400" height="300" id="canvas"></canvas>
+
+		<div id = "outpt">
+			
+		</div>
+		<div id="resulting">
+			
+		</div>
+		<button id="loadImage" name="loadImage" ng-click="uploadCtrl.getImage()" value="">GET IMAGE</button>
+		<div id="imageresult">
+			
+		</div>
+	</div>
+</div>  
