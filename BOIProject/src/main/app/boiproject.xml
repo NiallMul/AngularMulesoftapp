@@ -1,28 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:cors="http://www.mulesoft.org/schema/mule/cors"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/cors http://www.mulesoft.org/schema/mule/cors/current/mule-cors.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
-	<db:mysql-config name="MySQL_Configuration" host="localhost" port="3306" user="root" database="emaildb" doc:name="MySQL Configuration"/>
-    <http:listener-config name="HTTP_Get_Customer_Configuration" host="localhost" port="5000" doc:name="HTTP Listener Configuration"/>
+<context:property-placeholder location="boiproject.properties"/>
+	<db:mysql-config name="MySQL_Configuration" host="${dbHost}" port="3306" user="${dbUser}" database="${dbName}" doc:name="MySQL Configuration"/>
+  
     <http:request-config name="HTTP_Account_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
-    <http:listener-config name="HTTP_Get_Accounts_Configuration" host="localhost" port="5001" doc:name="HTTP Listener Configuration"/>
     <http:request-config name="HTTP_Customer_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Get_Payments_Configuration" host="localhost" port="5002" doc:name="HTTP Listener Configuration"/>
     <http:request-config name="HTTP_Payment_Configuration" protocol="HTTPS" host="apis.bbva.com" port="443" doc:name="HTTP Request Configuration"/>
-    <http:listener-config name="HTTP_Listener_Configuration1" host="localhost" port="5005" doc:name="HTTP Listener Configuration"/>
+    <http:listener-config name="HTTP_Listener_Configuration_main" host="localhost" port="5000" doc:name="HTTP Listener Configuration"/>
+  	  <cors:config name="Cors_Configuration" doc:name="Cors Configuration">
+     <cors:origins>
+         <cors:origin url="*" accessControlMaxAge="180">
+             <cors:methods>
+                 <cors:method>GET</cors:method>
+                 <cors:method>POST</cors:method>
+                 <cors:method>PUT</cors:method>
+                 <cors:method>DELETE</cors:method>
+                 <cors:method>OPTIONS</cors:method>
+             </cors:methods>
+             <cors:headers>
+                 <cors:header>X-Allow-Origin</cors:header>
+             </cors:headers>
+         </cors:origin>
+     </cors:origins>
+ </cors:config>
+    <http:request-config name="HTTP_Request_Configuration_to_google" protocol="HTTPS" host="vision.googleapis.com" port="443" doc:name="HTTP Request Configuration"/>
     <sub-flow name="get_api_key">
-        <set-session-variable variableName="apikey" value="jwt eyJ6aXAiOiJERUYiLCJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.N6aas89l4sphzyPuA2E7XrqqWJ-HMfVWPjS3pbu0-JXY7q8yWfC-UBlvILzwWTSmIJRJhRy5x1N7g9igcqtH4LXnAWHpwZnJtx5W0EO98dSx2rO6yUa1hgjEylHBNxLQFLWBs_TkpSaCTHBevk8Zfwwe0bJTbDxYhkDerGIbQS1Y5CsgYL02MRPm4eOyIwKh0DMh0Q-_UXQNthwlJ9ARSR4q9tyDn64zR8QbZULPjvTQewGcKm-3JyfLGC3wnVm4u-rRXIzJLGM8HZSbicnn53X_Q-dvurr-KVi2MrOXsskYo4GE038jrlbFm9ryPxQUx4trtY8zx0AtxRsjkq-C0w.Cg9qNDq4yUqbjCei.1uPCk6tqaanKRnv7L9cG_3eLKzBr6_gdCMMWs03G7YjmVChzYYysrZ7NASWkGETS__sFEUqOzaQ4tb8v9QBtTRYIygCi-UvHD7UvO2t83MSIhZTlCP_wFXQv4EKtqrm0VRO3i3fvyRvPMxPF48rouD_UL20o84n7w79eHC0yl3pLYhnrWhCSa2PrbCKOzLBjJL7m4U4qwV16LrCEj92Fewv5AuXmvKkZQHAsR-96bM8miG753vpnEYAvkHjBfUUyZ2NHv_uyq2sVofAjOROpph1MYOGfjOoeg8RXXu76IY39vNhcbUAu1KF27Vj936WtpXgSOK-VMNriBrksTWkcTlj8prSWb45CEjAOM6VK_SqGAHaQGEO0e5oXu51z7G5BiyIuHgyjz1JqGNPFLHKzIrHkaCQ_pJg2qp4vgyN-g1K1nISw9TsXygluCdSGFagdwzRxWsekyOZD4g._ioIlyD9M3KhJiZd24gU8A" doc:name="API_KEY"/>
+        <set-session-variable variableName="apikey" value="jwt eyJ6aXAiOiJERUYiLCJlbmMiOiJBMTI4R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ.sdnzFSvC2oIkRGxknyP8tD3RmIGnLDRncAMqiEbL6P3FBu5Y-yPnkfy1Yjn0GfUq7oTnS9stMeW95hNzXB6jtvKeIMuoAx4UmTZ78bCoy9fkIjqGCx3XtQS4vjE3je5yWtC-kB1nslK0gPaQr0RLzIqSBKeZSIQyIbqfRO8Zg6GiG-e8Aw96DLSLs2q2IFb18nSGpnwo1MCLfISxZOmyTdgpcVYsfxsJIqjP7qNwj9VZnzl4YKHMLZtw1k0JG97WoL29UTR3FEyc3SnUWPthM919lTNOseMxvcBVeXy9o_QYmu46XZ8D-RswBFCDYz_yZHnedvorw0mMM7mc0J2XAA.TKHZPlMorGZB-JQ7.odnA9nyWLoO70VRsRKdlMmmX3YGbCbGBmSZJACa2ey7W5aKuhNOD62T7Q9YsszCF3mW1iXrZ2ACAOVs5G05LyZz1osOzUQXucBwA2C4sB_-0sLNS4TNaXyQbyBKWfhAToBSA8t659xsFHCRapPuEo1nSSa2L5lK5wIkKNDQh3A51eVXG_dqtUToEhTsoIlI4IqBYlxRxvJ5TI7rFVJb9IV7_bcLLsm3OcV_qhE2s-SOSs4LiuJCPGfoyjvZf0GrLYPdSDRC8aaI20fU1zWwFnvR0CBT07ccCOMivSXps6tYwqq1y27WdxV_gauRpc8NtVHXzD_Sbazb2JZZbvi5V-1LtuMkRX-3xLNRppd5aH5wzXuzLSQ-OWfLHP1zW0_dJnyb-2r4OVfyIZ09YJFitZV7vfo6P02HmcCzBPlN6JdjKgacP5zHQllUHzTyK1yLtSQP5CdnEkOcwq26N.Ix10evhtTwD9WkbHDdxwmQ" doc:name="API_KEY"/>
     </sub-flow>
     <flow name="get_customer_flow">
-        <http:listener config-ref="HTTP_Get_Customer_Configuration" path="/customer" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/customer" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
         <http:request config-ref="HTTP_Customer_Configuration" path="/customers-sbx/v1/me-basic" method="GET" doc:name="HTTPS_CUSTOMER">
             <http:request-builder>
@@ -32,7 +52,8 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         </http:request>
     </flow>
     <flow name="get_account_flow">
-        <http:listener config-ref="HTTP_Get_Accounts_Configuration" path="/account" allowedMethods="GET" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/account" allowedMethods="GET" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
         <logger message="---------&gt;#[sessionVars.apikey]" level="INFO" doc:name="Logger"/>
         <http:request config-ref="HTTP_Account_Configuration" path="/accounts-sbx/v1/me/accounts" method="GET" doc:name="HTTPS_ACCOUNTS">
@@ -44,9 +65,11 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         <logger message="#[message]" level="INFO" doc:name="customer"/>
     </flow>
     <flow name="get_payments_flow">
-        <http:listener config-ref="HTTP_Get_Payments_Configuration" path="/payments" doc:name="HTTP"/>
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/payments" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <flow-ref name="get_api_key" doc:name="Flow Reference"/>
-        <set-variable variableName="accountId" value="ES0182002000000000000000000042075349XXXXXXXXX" doc:name="Account ID"/>
+        <set-variable variableName="accountId" value="#[message.inboundProperties.'http.query.params'.id]" doc:name="Account ID"/>
+        <logger level="INFO" doc:name="Logger"/>
         <http:request config-ref="HTTP_Payment_Configuration" path="/payments-sbx/v1/me/transfers" method="GET" doc:name="HTTPS_PAYMENTS">
             <http:request-builder>
                 <http:query-param paramName="accountId" value="#[flowVars.accountId]"/>
@@ -55,8 +78,9 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
             </http:request-builder>
         </http:request>
     </flow>
-    <flow name="Copy_of_Login_flow">
-        <http:listener config-ref="HTTP_Listener_Configuration" path="/login" doc:name="HTTP"/>
+    <flow name="Login_flow">
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/login" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
         <logger message="the payload is============#[payload]" level="INFO" doc:name="Payload logger"/>
         <custom-transformer class="com.qa.messageReturn.MessageTransformer" doc:name="Message_Transformer"/>
         <json:object-to-json-transformer doc:name="Message to JSON"/>
@@ -82,8 +106,105 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
         <json:object-to-json-transformer doc:name="Object to JSON"/>
         <logger message="after json #[payload]" level="INFO" doc:name="Logger"/>
     </flow>
-    <flow name="upload_receipt_flow">
-        <http:listener config-ref="HTTP_Listener_Configuration1" path="/" doc:name="HTTP_POST_RECEIPT"/>
-        <logger message="#[message] +++++++++++++++++ #[payload]" level="INFO" doc:name="incomming message and payload"/>
+    <flow name="upload_receipt">
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/uploadReceipt" allowedMethods="POST" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
+        <set-session-variable variableName="transactionID" value="#[message.inboundProperties.'http.query.params'.id]" doc:name="Session Variable"/>
+        <logger message="the  TRANS id ======= #[sessionVars.transactionID]" level="INFO" doc:name="Logger"/>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <custom-transformer class="com.qa.messageReturn.ProcessImage" doc:name="Java"/>
+        <db:insert config-ref="MySQL_Configuration" doc:name="Database_Insert">
+            <db:dynamic-query><![CDATA[INSERT INTO receipts(imgpath,transactionId) VALUES('#[sessionVars.imgPath]','#[sessionVars.transactionID]');]]></db:dynamic-query>
+        </db:insert>
+        <flow-ref name="google_api_flow" doc:name="google_api_flow"/>
+        <choice doc:name="Choice">
+            <when expression="#[payload!=empty]">
+                <set-payload value="#[&quot;successful upload&quot;]" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="#[&quot;unsuccessful upload&quot;]" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
     </flow>
+    <sub-flow name="google_api_flow">
+        <logger message="inside the google flow" level="INFO" doc:name="Logger"/>
+        <set-payload value="{   &quot;requests&quot;:[     {       &quot;image&quot;:{         &quot;content&quot;: &quot;#[sessionVars.receiptImage]&quot;         },       &quot;features&quot;: [         {            &quot;type&quot;: &quot;TEXT_DETECTION&quot;         }       ]     }   ] }" doc:name="Set Payload"/>
+        <http:request config-ref="HTTP_Request_Configuration_to_google" path="/v1/images:annotate" method="POST" doc:name="HTTP_to_google">
+            <http:request-builder>
+                <http:header headerName="Authorization" value="Bearer ya29.c.El-FBVUBJgcmawliY46Z05_9Y8jKCjOZX5YecGciug6qz8bo7Oz2lGl3iXW8KeAEuERHEk8aj6TSXcprKcI1aXRDCJYcqFq5H2abaj-3TqMgWX0XL-Wk2lzi7_ft-VCoYw&#8203;"/>
+            </http:request-builder>
+        </http:request>
+        <object-to-string-transformer doc:name="Object to String"/>
+        <json:json-to-object-transformer returnClass="java.util.HashMap" doc:name="JSON to Object"/>
+        <custom-transformer class="APITransformer.APITransform" doc:name="Java"/>
+        <set-session-variable variableName="receiptText" value="#[payload]" doc:name="Session Variable"/>
+        <logger message="#[sessionVars.receiptText]" level="INFO" doc:name="Logger"/>
+        <foreach collection="#[sessionVars.receipt.getLines()]" doc:name="For Each">
+            <expression-component doc:name="Expression"><![CDATA[flowVars.insertItem= '("'+payload.getProductName()+'","'+payload.getPrice()+'","'+sessionVars.transactionID+'")';]]></expression-component>
+            <logger message="#[flowVars.insertItem]" level="INFO" doc:name="Logger"/>
+            <db:insert config-ref="MySQL_Configuration" doc:name="Database">
+                <db:dynamic-query><![CDATA[INSERT INTO `receiptItem` (`itemname`, `itemprice`, `transactionId`)VALUES #[flowVars.insertItem]]]></db:dynamic-query>
+            </db:insert>
+        </foreach>
+    </sub-flow>
+    <flow name="get_image">
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/getimage" allowedMethods="GET" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
+        <set-session-variable variableName="transactionID" value="#[message.inboundProperties.'http.query.params'.id]" doc:name="Session Variable"/>
+        <logger message="Entered get" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[SELECT imgpath FROM receipts WHERE transactionId = '#[sessionVars.transactionID]';]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload!=empty]">
+                <custom-transformer class="com.qa.messageReturn.ImageEncode" doc:name="Java"/>
+                <set-payload value="#[sessionVars.img]" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="#[&quot;not found&quot;]" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="delete_image">
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/deleteimage"  doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
+        <set-session-variable variableName="transactionID" value="#[message.inboundProperties.'http.query.params'.id]" doc:name="Session Variable"/>
+        <logger message="=====================Delete image flow===================== reciept=#[message.inboundProperties.'http.query.params'.id]" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[SELECT imgpath FROM receipts WHERE transactionId = '#[sessionVars.transactionID]';]]></db:dynamic-query>
+        </db:select>
+        <custom-transformer class="com.qa.messageReturn.DeleteImage" doc:name="Java"/>
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[DELETE FROM receipts WHERE transactionId = '#[sessionVars.transactionID]';]]></db:dynamic-query>
+        </db:delete>
+        <db:delete config-ref="MySQL_Configuration" doc:name="Database">
+            <db:parameterized-query><![CDATA[delete from receiptitem where transactionId=#[sessionVars.transactionID]]]></db:parameterized-query>
+        </db:delete>
+        <choice doc:name="Choice">
+            <when expression="#[payload!=empty]">
+                <set-payload value="#[&quot;successful delete&quot;]" doc:name="Set Payload"/>
+            </when>
+            <otherwise>
+                <set-payload value="#[&quot;unsuccessful delete&quot;]" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="get_receipt_items">
+        <http:listener config-ref="HTTP_Listener_Configuration_main" path="/getitems" allowedMethods="GET" doc:name="HTTP"/>
+        <cors:validate config-ref="Cors_Configuration" publicResource="true" acceptsCredentials="false" doc:name="CORS Validate"/>
+        <logger message="Entered get" level="INFO" doc:name="Logger"/>
+        <db:select config-ref="MySQL_Configuration" doc:name="Database">
+            <db:dynamic-query><![CDATA[SELECT * FROM receiptitem WHERE transactionId = '#[message.inboundProperties.'http.query.params'.id]';]]></db:dynamic-query>
+        </db:select>
+        <choice doc:name="Choice">
+            <when expression="#[payload!=empty]">
+                <json:object-to-json-transformer doc:name="Object to JSON"/>
+                <logger message="#[payload]" level="INFO" doc:name="Logger"/>
+            </when>
+            <otherwise>
+                <set-payload value="#[&quot;not found&quot;]" doc:name="Set Payload"/>
+            </otherwise>
+        </choice>
+    </flow>
+
 </mule>
